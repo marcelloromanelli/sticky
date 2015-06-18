@@ -3,6 +3,7 @@
 // Author: Anthony Garand
 // Improvements by German M. Bravo (Kronuz) and Ruud Kamphuis (ruudk)
 // Improvements by Leonardo C. Daronco (daronco)
+// Improvements by Marcello Romanelli (marcelloromanelli)
 // Created: 2/14/2011
 // Date: 16/04/2015
 // Website: http://labs.anthonygarand.com/sticky
@@ -22,7 +23,8 @@
       center: false,
       getWidthFrom: '',
       widthFromWrapper: true, // works only when .getWidthFrom is empty
-      responsiveWidth: false
+      responsiveWidth: false,
+      heightCheck: true, // prevents sticky if the element is bigger than the viewport
     },
     $window = $(window),
     $document = $(document),
@@ -117,14 +119,38 @@
         }
       }
     },
+    isStickyElementFitting = function(options, stickyElement) {
+      return function(){
+        var windowHeight = $window.height();
+        var stickyHeight = stickyElement.outerHeight();
+
+        if(stickyHeight <= windowHeight){
+          stickyElement.sticky(options);
+          return true;
+        } else {
+          return false;
+        }
+      };
+    },
     methods = {
       init: function(options) {
         var o = $.extend({}, defaults, options);
         return this.each(function() {
-          var stickyElement = $(this);
 
+          var stickyElement = $(this);
           var stickyId = stickyElement.attr('id');
           var stickyHeight = stickyElement.outerHeight();
+          var windowHeight = $window.height();
+
+          if(o.heightCheck && stickyHeight > windowHeight){
+            if (window.addEventListener) {
+              window.addEventListener('resize', isStickyElementFitting(options, stickyElement), false);
+            } else if (window.attachEvent) {
+                window.attachEvent('onresize', isStickyElementFitting(options, stickyElement));
+            }
+            return false;
+          }
+
           var wrapperId = stickyId ? stickyId + '-' + defaults.wrapperClassName : defaults.wrapperClassName
           var wrapper = $('<div></div>')
             .attr('id', wrapperId)
