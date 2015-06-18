@@ -24,7 +24,7 @@
       getWidthFrom: '',
       widthFromWrapper: true, // works only when .getWidthFrom is empty
       responsiveWidth: false,
-      heightCheck: true, // prevents sticky if the element is bigger than the viewport
+      heightCheck: true // prevents sticky if the element is bigger than the viewport
     },
     $window = $(window),
     $document = $(document),
