@@ -180,6 +180,14 @@
             ;
           }
         });
+      },
+      height: function(options) {
+        var o = $.extend({}, defaults, options);
+        return this.each(function() {
+            var stickyElement = $(this);
+            var stickyHeight = stickyElement.outerHeight();
+            stickyElement.parent().css('height', stickyHeight);
+        });
       }
     };
 

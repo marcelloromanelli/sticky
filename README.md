@@ -51,6 +51,7 @@ Check the `example-*.html` files for some examples.
 
 - `sticky(options)`: Initializer. `options` is optional.
 - `sticky('update')`: Recalculates the element's position.
+- `sticky('height')`: Recalculates the height of the element's wrapper.
 
 ## Events
 
