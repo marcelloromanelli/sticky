@@ -24,7 +24,8 @@
       getWidthFrom: '',
       widthFromWrapper: true, // works only when .getWidthFrom is empty
       responsiveWidth: false,
-      heightCheck: true // prevents sticky if the element is bigger than the viewport
+      heightCheck: true // prevents sticky if the element is bigger than the viewport,
+      horizontalScroll: true,
     },
     $window = $(window),
     $document = $(document),
@@ -143,12 +144,16 @@
           var windowHeight = $window.height();
 
           if(o.heightCheck && stickyHeight > windowHeight){
-            if (window.addEventListener) {
-              window.addEventListener('resize', isStickyElementFitting(options, stickyElement), false);
-            } else if (window.attachEvent) {
-                window.attachEvent('onresize', isStickyElementFitting(options, stickyElement));
-            }
+            $window.resize(function(){
+                isStickyElementFitting(options, stickyElement)
+            });
             return false;
+          }
+
+          if(!o.horizontalScroll){
+            $window.scroll(function(){
+              stickyElement.css('left',-$window.scrollLeft());
+            });
           }
 
           var wrapperId = stickyId ? stickyId + '-' + defaults.wrapperClassName : defaults.wrapperClassName
