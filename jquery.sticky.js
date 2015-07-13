@@ -25,13 +25,17 @@
             getWidthFrom: '',
             widthFromWrapper: true, // works only when .getWidthFrom is empty
             responsiveWidth: false,
-            heightCheck: true, // prevents sticky if the element is bigger than the viewport,
-            horizontalScroll: 0
+            minSize: {
+                width: Number.MIN_VALUE,
+                height: Number.MIN_VALUE
+            },
+            horizontalCompensation: 0
         },
         $window = $(window),
         $document = $(document),
         sticked = [],
         windowHeight = $window.height(),
+        windowWidth = $window.width(),
         scroller = function() {
             var scrollTop = $window.scrollTop(),
                 documentHeight = $document.height(),
@@ -101,6 +105,7 @@
         },
         resizer = function() {
             windowHeight = $window.height();
+            windowWidth = $window.width();
 
             for (var i = 0; i < sticked.length; i++) {
                 var s = sticked[i];
@@ -115,20 +120,14 @@
                 if (newWidth !== null) {
                     s.stickyElement.css('width', newWidth);
                 }
-            }
-        },
-        isStickyElementFitting = function(options, stickyElement) {
-            return function() {
-                var windowHeight = $window.height();
-                var stickyHeight = stickyElement.outerHeight();
 
-                if (stickyHeight <= windowHeight) {
-                    stickyElement.sticky(options);
-                    return true;
-                } else {
-                    return false;
+                if(s.minSize){
+                    var min = s.minSize;
+                    if(windowHeight < min.height || windowWidth < min.width){
+                        s.stickyElement.unstick();
+                    }
                 }
-            };
+            }
         },
         methods = {
             init: function(options) {
@@ -141,21 +140,20 @@
                     var windowHeight = $window.height();
                     var windowWidth = $window.width();
 
-
-                    if (o.heightCheck && stickyHeight > windowHeight) {
-                        $window.resize(function() {
-                            isStickyElementFitting(options, stickyElement);
-                        });
-                        return false;
+                    if(o.minSize){
+                        var min = o.minSize;
+                        if(windowHeight < min.height || windowWidth < min.width){
+                            return false;
+                        }
                     }
 
-                    // If the user specified an horizontalScroll
+                    // If the user specified an horizontalCompensation
                     // we will make sure that the fixed element will
                     // scroll only on the y axis.
-                    if (o.horizontalScroll > 0) {
+                    if (o.horizontalCompensation > 0) {
 
                         var originalLeft = stickyElement.position().left;
-                        var isBinded = o.horizontalScroll >= windowWidth;
+                        var isBinded = o.horizontalCompensation >= windowWidth;
 
                         var adjustLeft = function() {
                             stickyElement.css('left', originalLeft - $window.scrollLeft());
@@ -165,11 +163,11 @@
 
                         $window.resize(function() {
                             var windowWidth = $window.width();
-                            if (isBinded && o.horizontalScroll < windowWidth) {
+                            if (isBinded && o.horizontalCompensation < windowWidth) {
                                 isBinded = false;
                                 $window.off('scroll', adjustLeft);
                                 stickyElement.css('left', '');
-                            } else if (!isBinded && o.horizontalScroll >= windowWidth) {
+                            } else if (!isBinded && o.horizontalCompensation >= windowWidth) {
                                 isBinded = true;
                                 $window.scroll(adjustLeft);
                             }
