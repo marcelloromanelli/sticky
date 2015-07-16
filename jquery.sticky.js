@@ -137,8 +137,17 @@
                     var stickyElement = $(this);
                     var stickyId = stickyElement.attr('id');
                     var stickyHeight = stickyElement.outerHeight();
+
                     var windowHeight = $window.height();
                     var windowWidth = $window.width();
+
+                    // Pixels available for the sticky element to scroll
+                    var availableScrollingSpace = $(document).height() - o.bottomSpacing - o.topSpacing;
+
+                    // If the element has no room to scroll we stop
+                    if(availableScrollingSpace < stickyHeight){
+                        return false;
+                    }
 
                     if(o.minSize){
                         var min = o.minSize;
@@ -150,27 +159,10 @@
                     // If the user specified an horizontalCompensation
                     // we will make sure that the fixed element will
                     // scroll only on the y axis.
-                    if (o.horizontalCompensation > 0) {
-
+                    if (o.horizontalCompensation > 0 && o.horizontalCompensation >= windowWidth) {
                         var originalLeft = stickyElement.position().left;
-                        var isBinded = o.horizontalCompensation >= windowWidth;
-
-                        var adjustLeft = function() {
+                        $window.scroll(function() {
                             stickyElement.css('left', originalLeft - $window.scrollLeft());
-                        };
-
-                        if(isBinded) $window.scroll(adjustLeft);
-
-                        $window.resize(function() {
-                            var windowWidth = $window.width();
-                            if (isBinded && o.horizontalCompensation < windowWidth) {
-                                isBinded = false;
-                                $window.off('scroll', adjustLeft);
-                                stickyElement.css('left', '');
-                            } else if (!isBinded && o.horizontalCompensation >= windowWidth) {
-                                isBinded = true;
-                                $window.scroll(adjustLeft);
-                            }
                         });
                     }
 
