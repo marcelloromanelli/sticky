@@ -58,8 +58,19 @@
                         s.stickyElement.parent().removeClass(s.className);
                         s.stickyElement.trigger('sticky-end', [s]);
                         s.currentTop = null;
+                        if (s.horizontalCompensation >= windowWidth) {
+                            s.stickyElement.css('left', s.originalPositionLeft);
+                        }
                     }
                 } else {
+
+                    // If the user specified an horizontalCompensation
+                    // we will make sure that the fixed element will
+                    // scroll only on the y axis.
+                    if (s.horizontalCompensation >= windowWidth) {
+                            s.stickyElement.css('left', s.originalOffsetLeft - $window.scrollLeft());
+                    }
+
                     var newTop = documentHeight - s.stickyElement.outerHeight() - s.topSpacing - s.bottomSpacing - scrollTop - extra;
                     if (newTop < 0) {
                         newTop = newTop + s.topSpacing;
@@ -68,14 +79,17 @@
                     }
                     if (s.currentTop != newTop) {
                         var newWidth;
+
                         if (s.getWidthFrom) {
                             newWidth = $(s.getWidthFrom).width() || null;
                         } else if (s.widthFromWrapper) {
                             newWidth = s.stickyWrapper.width();
                         }
+
                         if (newWidth === null) {
                             newWidth = s.stickyElement.width();
                         }
+
                         s.stickyElement
                             .css('width', newWidth)
                             .css('position', 'fixed')
@@ -120,13 +134,6 @@
                 if (newWidth !== null) {
                     s.stickyElement.css('width', newWidth);
                 }
-
-                if(s.minSize){
-                    var min = s.minSize;
-                    if(windowHeight < min.height || windowWidth < min.width){
-                        s.stickyElement.unstick();
-                    }
-                }
             }
         },
         methods = {
@@ -149,21 +156,9 @@
                         return false;
                     }
 
-                    if(o.minSize){
-                        var min = o.minSize;
-                        if(windowHeight < min.height || windowWidth < min.width){
-                            return false;
-                        }
-                    }
-
-                    // If the user specified an horizontalCompensation
-                    // we will make sure that the fixed element will
-                    // scroll only on the y axis.
-                    if (o.horizontalCompensation > 0 && o.horizontalCompensation >= windowWidth) {
-                        var originalLeft = stickyElement.position().left;
-                        $window.scroll(function() {
-                            stickyElement.css('left', originalLeft - $window.scrollLeft());
-                        });
+                    // If the element is bigger than the current viewport we prevent stickiness
+                    if((stickyHeight + o.topSpacing) > windowHeight){
+                        return false;
                     }
 
                     var wrapperId = stickyId ? stickyId + '-' + defaults.wrapperClassName : defaults.wrapperClassName;
@@ -196,6 +191,9 @@
                     o.stickyElement = stickyElement;
                     o.stickyWrapper = stickyWrapper;
                     o.currentTop = null;
+
+                    o.originalOffsetLeft = stickyElement.offset().left;
+                    o.originalPositionLeft = stickyElement.position().left;
 
                     sticked.push(o);
                 });
